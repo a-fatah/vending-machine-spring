@@ -1,19 +1,19 @@
-package co.mvpmatch.vendingmachine.auth;
+package co.mvpmatch.vendingmachine.auth.signup;
 
+import co.mvpmatch.vendingmachine.auth.Role;
+import co.mvpmatch.vendingmachine.auth.signup.validation.AllowedValues;
+import co.mvpmatch.vendingmachine.auth.signup.validation.UsernameTakenException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
-import org.springframework.stereotype.Service;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/user")
@@ -57,42 +57,7 @@ public class SignupController {
         problemDetail.setProperties(validationErrors);
         return problemDetail;
     }
-}
 
-interface UserRepository extends JpaRepository<User, Long> {
-    Optional<User> findByUsername(String username);
-}
-
-interface SignupService {
-    void signup(String username, String password, Role role);
-}
-
-@Service
-class SignupServiceImpl implements SignupService {
-
-    private final UserRepository userRepository;
-
-    SignupServiceImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
-
-    @Override
-    public void signup(String username, String password, Role role) {
-
-        Optional<User> user = userRepository.findByUsername(username);
-
-        if (user.isPresent()) {
-            throw new UsernameTakenException(username);
-        }
-
-        userRepository.save(new User(username, password, role));
-    }
-}
-
-class UsernameTakenException extends RuntimeException {
-    UsernameTakenException(String username) {
-        super("Username " + username + " is already taken");
-    }
 }
 
 @Data

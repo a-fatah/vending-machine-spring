@@ -1,4 +1,4 @@
-package co.mvpmatch.vendingmachine.auth;
+package co.mvpmatch.vendingmachine.auth.signup.validation;
 
 
 import jakarta.validation.Constraint;

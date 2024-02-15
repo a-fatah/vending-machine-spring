@@ -1,5 +1,6 @@
-package co.mvpmatch.vendingmachine.auth;
+package co.mvpmatch.vendingmachine.auth.signup.validation;
 
+import co.mvpmatch.vendingmachine.auth.signup.validation.AllowedValues;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 

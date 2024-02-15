@@ -1,7 +1,11 @@
 package co.mvpmatch.vendingmachine.auth;
 
 
+import co.mvpmatch.vendingmachine.auth.signup.SignupController;
+import co.mvpmatch.vendingmachine.auth.signup.SignupService;
+import co.mvpmatch.vendingmachine.auth.signup.validation.UsernameTakenException;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -52,7 +56,7 @@ class UserSignupTest {
                 "\"role\": \"BUYER\"" +
                 "}";
 
-        doThrow(new UsernameTakenException("admin"))
+        Mockito.doThrow(new UsernameTakenException("admin"))
                 .when(signupService).signup(anyString(), anyString(), any(Role.class));
 
         mockMvc.perform(post("/user")
