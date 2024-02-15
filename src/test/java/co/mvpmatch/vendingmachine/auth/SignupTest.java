@@ -4,11 +4,16 @@ package co.mvpmatch.vendingmachine.auth;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.http.MediaType;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
@@ -18,6 +23,9 @@ class UserSignupTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockBean
+    private SignupService signupService;
 
     @Test
     void shouldAllowSignup() throws Exception {
@@ -30,7 +38,10 @@ class UserSignupTest {
         mockMvc.perform(post("/user")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userJson))
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated())
+                .andDo(result -> System.out.println(result.getResponse().getContentAsString()));
+
+        verify(signupService).signup(anyString(), anyString(), any(Role.class));
     }
 
     @Test
@@ -41,30 +52,22 @@ class UserSignupTest {
                 "\"role\": \"BUYER\"" +
                 "}";
 
+        doThrow(new UsernameTakenException("admin"))
+                .when(signupService).signup(anyString(), anyString(), any(Role.class));
+
         mockMvc.perform(post("/user")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userJson))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.type").value("https://mvpmatch.co/docs/errors/username-already-taken"))
+                .andExpect(jsonPath("$.title").value("Username is already taken"))
+                .andExpect(jsonPath("$.detail").value("Username admin is already taken"));
     }
 
     @Test
-    void shouldSendBadRequestWhenUsernameIsInvalid() throws Exception {
+    void shouldSendBadRequesOnValidationErrors() throws Exception {
         String userJson = "{" +
                 "\"username\": \"\"," +
-                "\"password\": \"admin\"," +
-                "\"role\": \"BUYER\"" +
-                "}";
-
-        mockMvc.perform(post("/user")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(userJson))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void shouldSendBadRequestWhenPasswordIsInvalid() throws Exception {
-        String userJson = "{" +
-                "\"username\": \"admin\"," +
                 "\"password\": \"\"," +
                 "\"role\": \"BUYER\"" +
                 "}";
@@ -72,7 +75,12 @@ class UserSignupTest {
         mockMvc.perform(post("/user")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userJson))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.type").value("https://mvpmatch.co/docs/errors/validation-failed"))
+                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.detail").value("One or more fields failed validation"))
+                .andExpect(jsonPath("$.username").value("must not be blank"))
+                .andExpect(jsonPath("$.password").value("must not be blank"));
     }
 
     @Test
