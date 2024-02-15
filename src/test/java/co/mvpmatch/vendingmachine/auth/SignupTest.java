@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest
 @ContextConfiguration(classes = {SecurityConfig.class, SignupController.class})
-class UserSignupTest {
+class SignupTest {
 
     @Autowired
     private MockMvc mockMvc;
