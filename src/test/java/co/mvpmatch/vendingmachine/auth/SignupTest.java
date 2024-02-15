@@ -84,7 +84,7 @@ class UserSignupTest {
     }
 
     @Test
-    void shouldSendBadRequestWhenRoleIsInvalid() throws Exception {
+    void shouldValidateUserRole() throws Exception {
         String userJson = "{" +
                 "\"username\": \"admin\"," +
                 "\"password\": \"admin\"," +
@@ -94,6 +94,11 @@ class UserSignupTest {
         mockMvc.perform(post("/user")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userJson))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.type").value("https://mvpmatch.co/docs/errors/validation-failed"))
+                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.detail").value("One or more fields failed validation"))
+                .andExpect(jsonPath("$.role").value("Role must be either BUYER or SELLER"));
     }
+
 }
