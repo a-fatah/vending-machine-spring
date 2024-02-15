@@ -13,6 +13,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.http.MediaType;
 
+import javax.sql.DataSource;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -30,6 +32,9 @@ class SignupTest {
 
     @MockBean
     private SignupService signupService;
+
+    @MockBean
+    private DataSource dataSource;
 
     @Test
     void shouldAllowSignup() throws Exception {
