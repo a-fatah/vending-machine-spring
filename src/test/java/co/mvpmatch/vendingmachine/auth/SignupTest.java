@@ -1,6 +1,7 @@
 package co.mvpmatch.vendingmachine.auth;
 
 
+import co.mvpmatch.vendingmachine.auth.model.Role;
 import co.mvpmatch.vendingmachine.auth.signup.SignupController;
 import co.mvpmatch.vendingmachine.auth.signup.SignupService;
 import co.mvpmatch.vendingmachine.auth.signup.validation.UsernameTakenException;

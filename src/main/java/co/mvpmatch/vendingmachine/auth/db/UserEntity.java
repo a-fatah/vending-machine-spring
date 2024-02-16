@@ -1,6 +1,7 @@
-package co.mvpmatch.vendingmachine.auth;
+package co.mvpmatch.vendingmachine.auth.db;
 
 
+import co.mvpmatch.vendingmachine.auth.model.Role;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,7 +12,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class User {
+public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -20,7 +21,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    public User(String username, String password, Role role) {
+    public UserEntity(String username, String password, Role role) {
         this.username = username;
         this.password = password;
         this.role = role;

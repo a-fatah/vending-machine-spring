@@ -1,6 +1,6 @@
 package co.mvpmatch.vendingmachine.auth.signup;
 
-import co.mvpmatch.vendingmachine.auth.Role;
+import co.mvpmatch.vendingmachine.auth.model.Role;
 import co.mvpmatch.vendingmachine.auth.signup.validation.UsernameTakenException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
