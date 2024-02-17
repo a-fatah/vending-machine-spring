@@ -20,6 +20,7 @@ public class UserEntity {
     private String password;
     @Enumerated(EnumType.STRING)
     private Role role;
+    private Integer deposit;
 
     public UserEntity(String username, String password, Role role) {
         this.username = username;
