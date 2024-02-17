@@ -2,6 +2,13 @@ package co.mvpmatch.vendingmachine.buyer;
 
 import co.mvpmatch.vendingmachine.auth.db.UserEntity;
 import co.mvpmatch.vendingmachine.auth.db.UserRepository;
+import co.mvpmatch.vendingmachine.seller.ProductRepository;
+import co.mvpmatch.vendingmachine.seller.SaleInfo;
+import co.mvpmatch.vendingmachine.seller.SellerService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -9,10 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 
@@ -22,10 +26,19 @@ public class BuyerController {
     @Autowired
     private BuyerService buyerService;
 
+    @Autowired
+    private SellerService sellerService;
+
     @PostMapping("/deposit")
     @PreAuthorize("hasRole('BUYER')")
     public void deposit(@AuthenticationPrincipal UserDetails userDetails, @RequestParam("amount") int amount) {
         buyerService.deposit(userDetails.getUsername(), amount);
+    }
+
+    @PostMapping("/buy")
+    @PreAuthorize("hasRole('BUYER')")
+    public SaleInfo buy(@AuthenticationPrincipal UserDetails userDetails, @RequestBody @Valid BuyDto buyDto) {
+        return sellerService.sell(userDetails.getUsername(), buyDto.getProductId(), buyDto.getQuantity());
     }
 
     @ExceptionHandler(InvalidDepositAmountException.class)
@@ -39,56 +52,10 @@ public class BuyerController {
 
 }
 
-interface BuyerService {
-    void deposit(String username, int amount);
+@Data
+class BuyDto {
+    @NotBlank
+    private Long productId;
+    @Positive
+    private int quantity;
 }
-
-@Service
-class BuyerServiceImpl implements BuyerService {
-
-    private final UserRepository userRepository;
-
-    BuyerServiceImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
-
-    @Override
-    public void deposit(String username, int amount) {
-        if (!isValidDepositAmount(amount)) {
-            throw new InvalidDepositAmountException(amount);
-        }
-
-        // retrieve user
-        UserEntity buyer = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException(username));
-
-        // update user balance
-        int currentBalance = buyer.getDeposit() != null ? buyer.getDeposit() : 0;
-        buyer.setDeposit(currentBalance + amount);
-
-        userRepository.save(buyer);
-    }
-
-    private boolean isValidDepositAmount(int amount) {
-        if (amount < 0) {
-            return false;
-        }
-
-        return amount % 5 == 0;
-    }
-}
-
-
-class InvalidDepositAmountException extends RuntimeException {
-    public InvalidDepositAmountException(int amount) {
-        super("Invalid deposit amount: " + amount);
-    }
-}
-
-class UserNotFoundException extends RuntimeException {
-    public UserNotFoundException(String username) {
-        super("User not found: " + username);
-    }
-}
-
-
