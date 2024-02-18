@@ -1,9 +1,6 @@
 package co.mvpmatch.vendingmachine.buyer;
 
-import co.mvpmatch.vendingmachine.auth.db.UserEntity;
-import co.mvpmatch.vendingmachine.auth.db.UserRepository;
-import co.mvpmatch.vendingmachine.seller.ProductRepository;
-import co.mvpmatch.vendingmachine.seller.SaleInfo;
+import co.mvpmatch.vendingmachine.seller.Sale;
 import co.mvpmatch.vendingmachine.seller.SellerService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -15,10 +12,10 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.Map;
 
 @RestController
 public class BuyerController {
@@ -37,8 +34,13 @@ public class BuyerController {
 
     @PostMapping("/buy")
     @PreAuthorize("hasRole('BUYER')")
-    public SaleInfo buy(@AuthenticationPrincipal UserDetails userDetails, @RequestBody @Valid BuyDto buyDto) {
-        return sellerService.sell(userDetails.getUsername(), buyDto.getProductId(), buyDto.getQuantity());
+    public SaleDto buy(@AuthenticationPrincipal UserDetails userDetails, @RequestBody @Valid BuyDto buyDto) {
+        Sale sale = sellerService.sell(userDetails.getUsername(), buyDto.getProductId(), buyDto.getQuantity());
+        var saleDto = new SaleDto();
+        saleDto.setProductName(sale.getProduct().getName());
+        saleDto.setMoneySpent(sale.getCost());
+        saleDto.setChange(SellerService.calculateChangeDenominations(sale.getChangeAmount()));
+        return saleDto;
     }
 
     @ExceptionHandler(InvalidDepositAmountException.class)
@@ -58,4 +60,11 @@ class BuyDto {
     private Long productId;
     @Positive
     private int quantity;
+}
+
+@Data
+class SaleDto {
+    private String productName;
+    private int moneySpent;
+    private Map<Integer, Integer> change;
 }

@@ -4,8 +4,6 @@ import co.mvpmatch.vendingmachine.auth.db.UserEntity;
 import co.mvpmatch.vendingmachine.auth.db.UserRepository;
 import co.mvpmatch.vendingmachine.buyer.InsufficientBalanceException;
 import co.mvpmatch.vendingmachine.buyer.UserNotFoundException;
-import co.mvpmatch.vendingmachine.transaction.OperationNotAllowedException;
-import co.mvpmatch.vendingmachine.transaction.TransactionService;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -15,12 +13,12 @@ import java.util.Map;
 public class SellerService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
-    private final TransactionService transactionService;
+    private final SaleRepository saleRepository;
 
-    public SellerService(ProductRepository productRepository, UserRepository userRepository, TransactionService transactionService) {
+    public SellerService(ProductRepository productRepository, UserRepository userRepository, SaleRepository saleRepository) {
         this.productRepository = productRepository;
         this.userRepository = userRepository;
-        this.transactionService = transactionService;
+        this.saleRepository = saleRepository;
     }
 
     public Product createProduct(String name, Integer amountAvailable, Integer cost) {
@@ -43,7 +41,7 @@ public class SellerService {
         productRepository.deleteById(id);
     }
 
-    public SaleInfo sell(String username, Long productId, Integer quantity) {
+    public Sale sell(String username, Long productId, Integer quantity) {
         UserEntity user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException(username));
 
@@ -66,33 +64,44 @@ public class SellerService {
         product.setAmountAvailable(product.getAmountAvailable() - quantity);
         productRepository.save(product);
 
-        // Record the transaction
-        transactionService.createTransaction(username, productId, quantity, product.getCost() * quantity);
-
         // Calculate change and update user balance
         int change = user.getDeposit() - totalCost;
-
-        Map<Integer, Integer> changeCoins = calculateChange(change);
-
         user.setDeposit(change);
-
         userRepository.save(user);
 
-        // return product purchased, money spent and change
-        System.out.println("Product purchased: " + product.getName());
-        System.out.println("Money spent: " + totalCost);
-        System.out.println("Change: " + changeCoins);
-
-        SaleInfo saleInfo = new SaleInfo();
-        saleInfo.setProductName(product.getName());
-        saleInfo.setMoneySpent(totalCost);
-        saleInfo.setChange(changeCoins);
-
-
-        return saleInfo;
+        // Record the transaction
+        return createSale(username, productId, quantity, totalCost, change);
     }
 
-    private Map<Integer, Integer> calculateChange(int amount) {
+    private Sale createSale(String username, Long productId, Integer amount, Integer cost, int change) {
+        // Get the user and product from the database
+        UserEntity user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
+
+        // Check if the user has BUYER role
+        if (!user.getRole().equals("BUYER")) {
+            throw new OperationNotAllowedException("User is not a buyer");
+        }
+
+        Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException(productId));
+
+        // check if the product is available
+        if (product.getAmountAvailable() < amount) {
+            throw new OperationNotAllowedException("Product is not available");
+        }
+
+        // Create and store the sale
+        Sale sale = new Sale();
+        sale.setBuyer(user);
+        sale.setProduct(product);
+        sale.setAmount(amount);
+        sale.setCost(cost);
+        sale.setChangeAmount(change);
+        sale.setTimestamp(System.currentTimeMillis());
+
+        return saleRepository.save(sale);
+    }
+
+    public static Map<Integer, Integer> calculateChangeDenominations(int amount) {
         int[] allowedCoins = {5, 10, 20, 50, 100};
         HashMap<Integer, Integer> coinCounts = new HashMap<>();
 
