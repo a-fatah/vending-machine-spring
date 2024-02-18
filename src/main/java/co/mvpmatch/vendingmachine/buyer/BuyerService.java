@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 
 public interface BuyerService {
     void deposit(String username, int amount);
+
+    void resetDeposit(String username);
 }
 
 @Service
@@ -37,6 +39,17 @@ class BuyerServiceImpl implements BuyerService {
         // update user balance
         int currentBalance = buyer.getDeposit() != null ? buyer.getDeposit() : 0;
         buyer.setDeposit(currentBalance + amount);
+
+        userRepository.save(buyer);
+    }
+
+    @Override
+    public void resetDeposit(String username) {
+        UserEntity buyer = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException(username));
+
+        // reset user deposit
+        buyer.setDeposit(0);
 
         userRepository.save(buyer);
     }

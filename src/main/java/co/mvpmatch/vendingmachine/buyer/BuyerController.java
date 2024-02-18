@@ -43,6 +43,13 @@ public class BuyerController {
         return saleDto;
     }
 
+    @PostMapping("/reset")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('BUYER')")
+    public void resetDeposit(@AuthenticationPrincipal UserDetails userDetails) {
+        buyerService.resetDeposit(userDetails.getUsername());
+    }
+
     @ExceptionHandler(InvalidDepositAmountException.class)
     public ProblemDetail handleInvalidDepositAmountException(InvalidDepositAmountException e) {
         var problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Invalid deposit amount");

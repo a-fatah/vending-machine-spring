@@ -21,7 +21,8 @@ public class Product {
 
     Integer cost;
 
-    @OneToOne
+    @ManyToOne
+    @JoinColumn(name = "seller")
     UserEntity seller;
 
     public Product(String name, Integer amountAvailable, Integer cost, UserEntity seller) {
