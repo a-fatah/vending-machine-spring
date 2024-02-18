@@ -23,4 +23,11 @@ public class Product {
 
     @OneToOne
     UserEntity seller;
+
+    public Product(String name, Integer amountAvailable, Integer cost, UserEntity seller) {
+        this.name = name;
+        this.amountAvailable = amountAvailable;
+        this.cost = cost;
+        this.seller = seller;
+    }
 }
