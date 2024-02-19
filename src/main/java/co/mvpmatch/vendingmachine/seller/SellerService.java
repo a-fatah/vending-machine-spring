@@ -2,7 +2,7 @@ package co.mvpmatch.vendingmachine.seller;
 
 import co.mvpmatch.vendingmachine.auth.db.User;
 import co.mvpmatch.vendingmachine.auth.db.UserRepository;
-import co.mvpmatch.vendingmachine.buyer.InsufficientBalanceException;
+import co.mvpmatch.vendingmachine.buyer.InsufficientDepositException;
 import co.mvpmatch.vendingmachine.buyer.UserNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -45,10 +45,6 @@ public class SellerService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException(username));
 
-        if (!user.getRole().equals("buyer")) {
-            throw new OperationNotAllowedException("Only buyers can buy products");
-        }
-
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException(productId));
         if (product.getAmountAvailable() < quantity) {
@@ -58,7 +54,7 @@ public class SellerService {
         // check balance
         int totalCost = product.getCost() * quantity;
         if (user.getDeposit() < totalCost) {
-            throw new InsufficientBalanceException(user.getDeposit(), totalCost);
+            throw new InsufficientDepositException(user.getDeposit(), totalCost);
         }
 
         product.setAmountAvailable(product.getAmountAvailable() - quantity);

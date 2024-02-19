@@ -1,9 +1,11 @@
 package co.mvpmatch.vendingmachine.buyer;
 
+import co.mvpmatch.vendingmachine.seller.ProductNotFoundException;
 import co.mvpmatch.vendingmachine.seller.Sale;
 import co.mvpmatch.vendingmachine.seller.SellerService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +38,7 @@ public class BuyerController {
     @PreAuthorize("hasRole('BUYER')")
     public SaleDto buy(@AuthenticationPrincipal UserDetails userDetails, @RequestBody @Valid BuyDto buyDto) {
         Sale sale = sellerService.sell(userDetails.getUsername(), buyDto.getProductId(), buyDto.getQuantity());
+
         var saleDto = new SaleDto();
         saleDto.setProductName(sale.getProduct().getName());
         saleDto.setMoneySpent(sale.getCost());
@@ -59,11 +62,29 @@ public class BuyerController {
         return problemDetail;
     }
 
+    @ExceptionHandler(InsufficientDepositException.class)
+    public ProblemDetail handleInsufficientDepositException(InsufficientDepositException e) {
+        var problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Insufficient deposit");
+        problemDetail.setTitle("Insufficient Deposit");
+        problemDetail.setDetail(e.getMessage());
+        problemDetail.setType(URI.create("https://vendingmachine.co/docs/errors/insufficient-deposit"));
+        return problemDetail;
+    }
+
+    @ExceptionHandler(ProductNotFoundException.class)
+    public ProblemDetail handleProductNotFoundException(ProductNotFoundException e) {
+        var problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, "Product not found");
+        problemDetail.setTitle("Product not found");
+        problemDetail.setDetail(e.getMessage());
+        problemDetail.setType(URI.create("https://vendingmachine.co/docs/errors/product-not-found"));
+        return problemDetail;
+    }
+
 }
 
 @Data
 class BuyDto {
-    @NotBlank
+    @NotNull
     private Long productId;
     @Positive
     private int quantity;

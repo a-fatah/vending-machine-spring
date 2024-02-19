@@ -21,9 +21,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = BuyerController.class)
+@WebMvcTest(BuyerController.class)
 @Import({SecurityConfig.class, TestConfig.class})
-@AutoConfigureMockMvc
 public class DepositTests {
     private final UserRepository userRepository;
     private final MockMvc mockMvc;
@@ -44,7 +43,6 @@ public class DepositTests {
         mockMvc.perform(post("/deposit")
                 .param("amount", "100"))
                 .andExpect(status().isOk());
-
     }
 
     @Test
