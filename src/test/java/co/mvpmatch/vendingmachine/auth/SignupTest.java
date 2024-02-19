@@ -10,6 +10,8 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.http.MediaType;
@@ -24,8 +26,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
-@WebMvcTest
-@ContextConfiguration(classes = {SecurityConfig.class, SignupController.class})
+@WebMvcTest(SignupController.class)
+@Import({SecurityConfig.class})
 class SignupTest {
 
     @Autowired
@@ -35,7 +37,7 @@ class SignupTest {
     private SignupService signupService;
 
     @MockBean
-    private DataSource dataSource;
+    private UserDetailsService userDetailsService;
 
     @Test
     void shouldAllowSignup() throws Exception {
