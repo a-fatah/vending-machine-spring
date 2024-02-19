@@ -1,6 +1,6 @@
 package co.mvpmatch.vendingmachine.buyer;
 
-import co.mvpmatch.vendingmachine.auth.db.UserEntity;
+import co.mvpmatch.vendingmachine.auth.db.User;
 import co.mvpmatch.vendingmachine.auth.db.UserRepository;
 import co.mvpmatch.vendingmachine.seller.ProductRepository;
 import co.mvpmatch.vendingmachine.seller.SellerService;
@@ -33,7 +33,7 @@ class BuyerServiceImpl implements BuyerService {
         }
 
         // retrieve user
-        UserEntity buyer = userRepository.findByUsername(username)
+        User buyer = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException(username));
 
         // update user balance
@@ -45,7 +45,7 @@ class BuyerServiceImpl implements BuyerService {
 
     @Override
     public void resetDeposit(String username) {
-        UserEntity buyer = userRepository.findByUsername(username)
+        User buyer = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException(username));
 
         // reset user deposit

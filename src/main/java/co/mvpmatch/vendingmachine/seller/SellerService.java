@@ -1,6 +1,6 @@
 package co.mvpmatch.vendingmachine.seller;
 
-import co.mvpmatch.vendingmachine.auth.db.UserEntity;
+import co.mvpmatch.vendingmachine.auth.db.User;
 import co.mvpmatch.vendingmachine.auth.db.UserRepository;
 import co.mvpmatch.vendingmachine.buyer.InsufficientBalanceException;
 import co.mvpmatch.vendingmachine.buyer.UserNotFoundException;
@@ -42,7 +42,7 @@ public class SellerService {
     }
 
     public Sale sell(String username, Long productId, Integer quantity) {
-        UserEntity user = userRepository.findByUsername(username)
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException(username));
 
         if (!user.getRole().equals("buyer")) {
@@ -75,7 +75,7 @@ public class SellerService {
 
     private Sale createSale(String username, Long productId, Integer amount, Integer cost, int change) {
         // Get the user and product from the database
-        UserEntity user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
 
         // Check if the user has BUYER role
         if (!user.getRole().equals("BUYER")) {

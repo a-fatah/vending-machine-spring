@@ -1,6 +1,6 @@
 package co.mvpmatch.vendingmachine.seller;
 
-import co.mvpmatch.vendingmachine.auth.db.UserEntity;
+import co.mvpmatch.vendingmachine.auth.db.User;
 import co.mvpmatch.vendingmachine.auth.db.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,7 +27,7 @@ class ProductServiceImpl implements ProductService {
         log.info("User {} is creating product", username);
         log.info("Creating product with name: {}, cost: {}, amountAvailable: {}", name, cost, amountAvailable);
 
-        UserEntity seller = userRepository.findByUsername(username)
+        User seller = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         Product product = new Product(name, amountAvailable, cost, seller);

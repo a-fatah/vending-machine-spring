@@ -3,7 +3,6 @@ package co.mvpmatch.vendingmachine.auth.signup;
 import co.mvpmatch.vendingmachine.auth.model.Role;
 import co.mvpmatch.vendingmachine.auth.signup.validation.UsernameTakenException;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.stereotype.Service;
 
@@ -16,11 +15,9 @@ public interface SignupService {
 class SignupServiceImpl implements SignupService {
 
     private final UserDetailsManager userDetailsManager;
-    private final PasswordEncoder passwordEncoder;
 
-    public SignupServiceImpl(UserDetailsManager userDetailsManager, PasswordEncoder passwordEncoder) {
+    public SignupServiceImpl(UserDetailsManager userDetailsManager) {
         this.userDetailsManager = userDetailsManager;
-        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -32,7 +29,7 @@ class SignupServiceImpl implements SignupService {
 
         UserDetails user = org.springframework.security.core.userdetails.User.builder()
                 .username(username)
-                .password(passwordEncoder.encode(password))
+                .password(password)
                 .roles(role.name())
                 .build();
 

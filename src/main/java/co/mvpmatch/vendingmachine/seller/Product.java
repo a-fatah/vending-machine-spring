@@ -1,6 +1,6 @@
 package co.mvpmatch.vendingmachine.seller;
 
-import co.mvpmatch.vendingmachine.auth.db.UserEntity;
+import co.mvpmatch.vendingmachine.auth.db.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,9 +23,9 @@ public class Product {
 
     @ManyToOne
     @JoinColumn(name = "seller")
-    UserEntity seller;
+    User seller;
 
-    public Product(String name, Integer amountAvailable, Integer cost, UserEntity seller) {
+    public Product(String name, Integer amountAvailable, Integer cost, User seller) {
         this.name = name;
         this.amountAvailable = amountAvailable;
         this.cost = cost;

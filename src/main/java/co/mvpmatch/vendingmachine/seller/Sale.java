@@ -1,6 +1,6 @@
 package co.mvpmatch.vendingmachine.seller;
 
-import co.mvpmatch.vendingmachine.auth.db.UserEntity;
+import co.mvpmatch.vendingmachine.auth.db.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,7 +15,7 @@ public class Sale {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
     @OneToOne
-    private UserEntity buyer;
+    private User buyer;
     @OneToOne
     private Product product;
     private Integer amount;
