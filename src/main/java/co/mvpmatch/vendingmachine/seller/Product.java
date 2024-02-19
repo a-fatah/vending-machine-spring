@@ -25,8 +25,7 @@ public class Product {
     @JoinColumn(name = "seller")
     User seller;
 
-    public Product(Long id, String name, Integer amountAvailable, Integer cost) {
-        this.id = id;
+    public Product(String name, Integer amountAvailable, Integer cost) {
         this.name = name;
         this.amountAvailable = amountAvailable;
         this.cost = cost;

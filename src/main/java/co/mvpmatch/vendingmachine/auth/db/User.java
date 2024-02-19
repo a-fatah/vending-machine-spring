@@ -32,6 +32,17 @@ public class User implements UserDetails {
         this.role = role;
     }
 
+    public User(String username, Role role) {
+        this.username = username;
+        this.role = role;
+    }
+
+    public User(String username, Role role, Integer deposit) {
+        this.username = username;
+        this.role = role;
+        this.deposit = deposit;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.name()));

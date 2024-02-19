@@ -65,7 +65,7 @@ public class BuyerController {
     @ExceptionHandler(InsufficientDepositException.class)
     public ProblemDetail handleInsufficientDepositException(InsufficientDepositException e) {
         var problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Insufficient deposit");
-        problemDetail.setTitle("Insufficient Deposit");
+        problemDetail.setTitle("Insufficient deposit");
         problemDetail.setDetail(e.getMessage());
         problemDetail.setType(URI.create("https://vendingmachine.co/docs/errors/insufficient-deposit"));
         return problemDetail;
