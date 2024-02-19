@@ -1,60 +1,70 @@
 package co.mvpmatch.vendingmachine.buyer;
 
-import org.junit.jupiter.api.BeforeEach;
+import co.mvpmatch.vendingmachine.auth.SecurityConfig;
+import co.mvpmatch.vendingmachine.auth.db.User;
+import co.mvpmatch.vendingmachine.auth.db.UserRepository;
+import co.mvpmatch.vendingmachine.auth.model.Role;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import javax.sql.DataSource;
+
+import java.util.Optional;
+
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = BuyerController.class)
-@EnableWebSecurity
+@Import({SecurityConfig.class, TestConfig.class})
+@AutoConfigureMockMvc
 public class DepositTests {
+    private final UserRepository userRepository;
+    private final MockMvc mockMvc;
 
     @Autowired
-    WebApplicationContext context;
-
-    @MockBean
-    private UserDetailsService userDetailsService;
-
-    @MockBean
-    private BuyerService buyerService;
-
-    private MockMvc mockMvc;
-
-    // setup mockmvc
-
-    @BeforeEach
-    void setup() {
-        mockMvc = MockMvcBuilders
-                .standaloneSetup(context)
-                .apply(springSecurity())
-                .build();
+    public DepositTests(UserRepository userRepository, MockMvc mockMvc) {
+        this.userRepository = userRepository;
+        this.mockMvc = mockMvc;
     }
 
     @Test
     @WithMockUser(username = "buyer", roles = "BUYER")
     public void testDeposit() throws Exception {
 
+        when(userRepository.findByUsername("buyer")).thenReturn(
+                Optional.of(new User("buyer", "password", Role.BUYER)));
+
         mockMvc.perform(post("/deposit")
                 .param("amount", "100"))
                 .andExpect(status().isOk());
 
-        verify(buyerService, never()).deposit(any(), anyInt());
-        verify(userDetailsService, never()).loadUserByUsername(any());
+    }
+
+    @Test
+    @WithMockUser(username = "buyer", roles = "BUYER")
+    public void testDepositWithNegativeAmount() throws Exception {
+
+        mockMvc.perform(post("/deposit")
+                .param("amount", "-100"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.type").value("https://vendingmachine.co/docs/errors/invalid-deposit-amount"))
+                .andExpect(jsonPath("$.title").value("Invalid deposit amount"));
+    }
+
+    @Test
+    @WithMockUser(username = "seller", roles = "SELLER")
+    public void testDepositAsSeller() throws Exception {
+
+        mockMvc.perform(post("/deposit")
+                .param("amount", "100"))
+                .andExpect(status().isForbidden());
 
     }
 
